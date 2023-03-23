@@ -8,3 +8,5 @@ A virtual reality game experience designed around the National Justice Museum. T
 Type: Masters coursework  |   Timeline: February 2022 - May 2022  |   Team: Solo
 
 For more info: https://kalleri.me/escape-the-injustice
+
+(Note that this project was published here after the project was finished using the local backups from various stages of the project.)
