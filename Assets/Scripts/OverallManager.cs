@@ -29,7 +29,8 @@ public class OverallManager : MonoBehaviour
     public GameObject spawnedObjects;
     public GameObject sword;
     public GameObject blindfold;
-    public GameObject destroyFX;
+    public GameObject relevantDestroyFX;
+    public GameObject irrelevantDestroyFX;
 
     public bool[] isDestroyed = new bool[] { false, false, false, false };
     bool isFirstSpawn = true;
@@ -97,7 +98,7 @@ public class OverallManager : MonoBehaviour
     //When the user slashes relevant artefacts
     public void SlashedRelevant(Vector3 artefactPosition)
     {
-        Instantiate(destroyFX, artefactPosition, Quaternion.identity);
+        Instantiate(relevantDestroyFX, artefactPosition, Quaternion.identity);
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
         cloakLevel += 2.0f;
         Debug.Log("Points++");
@@ -106,6 +107,7 @@ public class OverallManager : MonoBehaviour
     //When the user slashes irrelevant artefacts
     public void SlashedIrrelevant(Vector3 artefactPosition)
     {
+        Instantiate(irrelevantDestroyFX, artefactPosition, Quaternion.identity);
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
         cloakLevel -= 1.0f;
         Debug.Log("Points--");

@@ -6,9 +6,6 @@ public class artefactManager : MonoBehaviour
 {
     public bool isRelevant = true;
     public OverallManager om;
-
-    
-
     //public GameObject manager;
 
     // Start is called before the first frame update
@@ -29,12 +26,12 @@ public class artefactManager : MonoBehaviour
         {
             if(isRelevant)
             {
-                om.SlashedRelevant(transform.position + (transform.up * 2.0f));
+                om.SlashedRelevant(transform.position);
             }
 
             else
             {
-                om.SlashedIrrelevant(transform.position + (transform.up * 2.0f));
+                om.SlashedIrrelevant(transform.position);
             }
 
             Destroy(gameObject);
