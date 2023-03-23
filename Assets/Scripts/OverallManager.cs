@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.SceneManagement;
 
 public class OverallManager : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class OverallManager : MonoBehaviour
     public int numberOfArtefacts = 4;
     public int occupiedCount = 0;
     public float xLimit = 50.0f, zLimit = 50.0f;
+
+    public float cloakLevel = 10.0f;
+    public bool isCloakLosing = false;
 
     Vector3 spawnLocation = Vector3.one;
     Vector3[] occupiedLocations = new Vector3[8];//{ new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f) };
@@ -24,6 +28,8 @@ public class OverallManager : MonoBehaviour
     public GameObject infoObject;
     public GameObject spawnedObjects;
     public GameObject sword;
+    public GameObject blindfold;
+    public GameObject destroyFX;
 
     public bool[] isDestroyed = new bool[] { false, false, false, false };
     bool isFirstSpawn = true;
@@ -50,6 +56,7 @@ public class OverallManager : MonoBehaviour
         occupiedCount++;
         Debug.Log("Going to Spawn");
         Spawn();
+        isCloakLosing = true;
     }
 
 
@@ -59,8 +66,8 @@ public class OverallManager : MonoBehaviour
         occupiedLocations[0] = sword.transform.position;
 
         targetDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
-
-        if(isSpawned)
+        
+        if (isSpawned)
         {
             timer -= Time.deltaTime;
             if(timer < 0)
@@ -72,23 +79,39 @@ public class OverallManager : MonoBehaviour
 
         if(primaryButtonValue && !isSpawned)
         {
+            blindfold.SetActive(true);
             Spawn();
+            playAudioCue();
+            blindfold.SetActive(false);
             isSpawned = true;
+        }
+
+        targetDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue);
+
+        if (secondaryButtonValue)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
+    //When the user slashes relevant artefacts
     public void SlashedRelevant(Vector3 artefactPosition)
     {
+        Instantiate(destroyFX, artefactPosition, Quaternion.identity);
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        cloakLevel += 2.0f;
         Debug.Log("Points++");
     }
 
+    //When the user slashes irrelevant artefacts
     public void SlashedIrrelevant(Vector3 artefactPosition)
     {
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        cloakLevel -= 1.0f;
         Debug.Log("Points--");
     }
 
+    //Function to spawn, also used for rearrange the artefacts
     public void Spawn()
     {
         bool isColliding = true;        
@@ -164,24 +187,25 @@ public class OverallManager : MonoBehaviour
 
             else
             {
-                currObjects[i].transform.position = spawnLocation;
-                if(currObjects[i].layer == 8)
-                {
-                    audioCue = currObjects[i].GetComponent<AudioSource>();
-                    audioCue.Play();
-                }                
+                currObjects[i].transform.position = spawnLocation;        
             }
-
-            //else
-            //{
-            //    occupiedLocations[i+1].transform
-            //}
         }
         isFirstSpawn = false;
         Debug.Log("Done Spawning");
+
+        if (isCloakLosing)
+        {
+            cloakLevel -= Time.deltaTime;
+            if (cloakLevel <= 0.0f)
+            {
+                Debug.Log("Cloak ran out. You failed to escape the level");
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+        }
     }
 
-    public bool InsideRegion(Vector3 point, Vector3 regionCenter, float distanceLimit) //To check if a point is in a circle
+    //To check if a point is in a circle
+    public bool InsideRegion(Vector3 point, Vector3 regionCenter, float distanceLimit) 
     {
         Vector3 pointTested;
         Vector3 centre;
@@ -205,5 +229,25 @@ public class OverallManager : MonoBehaviour
         }
     }
 
+    //To play the audio attached to artefacts if the artefact is a relevant one
+    public void playAudioCue()
+    {
+        GameObject[] currObjects = new GameObject[8];
+        int currObjectCount;
+
+        currObjects = GameObject.FindGameObjectsWithTag("Artefact");
+
+        currObjectCount = currObjects.Count();
+
+        for(int i = 0; i < currObjectCount; i++)
+        {
+            if (currObjects[i].layer == 8)
+            {
+                audioCue = currObjects[i].GetComponent<AudioSource>();
+                audioCue.Play();
+            }
+        }
+
+    }
     
 }
