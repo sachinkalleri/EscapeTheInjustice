@@ -95,13 +95,13 @@ public class OverallManager : MonoBehaviour
 
         if(primaryButtonValue && !isSpawned && whistleOptions > 0)
         {
+            whistleOptions--;
             blindfold.SetActive(true);
             isBlindfolded = true;
             Spawn();
             playAudioCue();
             //blindfold.SetActive(false);
-            isSpawned = true;
-            whistleOptions--;
+            isSpawned = true;            
         }
 
         if(isBlindfolded)
