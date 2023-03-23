@@ -85,6 +85,22 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 592951363221833707}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &-1180937884003420919
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359161857311177402}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!65 &1574820878399756293
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -98,3 +114,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.1373539, y: 1.446602, z: 1.0031469}
   m_Center: {x: 0.012199789, y: 0.723301, z: -0.0032394826}
+--- !u!114 &-6456593434901433037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359161857311177402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c315f4b3fa20412da58bc03c81d3bbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isRelevant: 1
+  om: {fileID: 0}
+  manager: {fileID: 0}
