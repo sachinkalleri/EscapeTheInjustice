@@ -9,21 +9,20 @@ public class OverallManager : MonoBehaviour
 {
     AudioSource audioCue;
 
-    public int spawnSize = 4;
-    public int numberOfArtefacts = 4;
+    public int spawnSize = 10;
     public int occupiedCount = 0;
     public float xLimit = 50.0f, zLimit = 50.0f;
+    public int whistleOptions = 3;
 
-    public float cloakLevel = 10.0f;
+    public float blindfoldTimer = 2.0f;
+    bool isBlindfolded = false;
+
+    public float cloakLevel = 30.0f;
     public bool isCloakLosing = false;
 
     Vector3 spawnLocation = Vector3.one;
-    Vector3[] occupiedLocations = new Vector3[8];//{ new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f) };
-    //public Transform[] occupiedLocations;
-
-
-    //public GameObject cube;
-    //public GameObject[] spawnLocations; To delete
+    Vector3[] occupiedLocations = new Vector3[15];//{ new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f) };
+  
     public GameObject[] artefacts;
     public GameObject infoObject;
     public GameObject spawnedObjects;
@@ -67,7 +66,23 @@ public class OverallManager : MonoBehaviour
         occupiedLocations[0] = sword.transform.position;
 
         targetDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
-        
+
+        if(checkWin())
+        {
+            Debug.Log("You won the level");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        if(whistleOptions < 0)
+        {
+            whistleOptions = 0;
+        }
+
+        if (whistleOptions > 3)
+        {
+            whistleOptions = 3;
+        }
+
         if (isSpawned)
         {
             timer -= Time.deltaTime;
@@ -78,13 +93,26 @@ public class OverallManager : MonoBehaviour
             }
         }
 
-        if(primaryButtonValue && !isSpawned)
+        if(primaryButtonValue && !isSpawned && whistleOptions > 0)
         {
             blindfold.SetActive(true);
+            isBlindfolded = true;
             Spawn();
             playAudioCue();
-            blindfold.SetActive(false);
+            //blindfold.SetActive(false);
             isSpawned = true;
+            whistleOptions--;
+        }
+
+        if(isBlindfolded)
+        {
+            blindfoldTimer -= Time.deltaTime;
+            if(blindfoldTimer <= 0.0f)
+            {
+                blindfold.SetActive(false);
+                isBlindfolded = false;
+                blindfoldTimer = 2.0f;
+            }
         }
 
         targetDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue);
@@ -93,6 +121,17 @@ public class OverallManager : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+
+        if (isCloakLosing)
+        {
+            cloakLevel -= Time.deltaTime;
+
+            if (cloakLevel <= 0.0f)
+            {
+                Debug.Log("Cloak ran out. You failed to escape the level");
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+        }
     }
 
     //When the user slashes relevant artefacts
@@ -100,8 +139,12 @@ public class OverallManager : MonoBehaviour
     {
         Instantiate(relevantDestroyFX, artefactPosition, Quaternion.identity);
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
-        cloakLevel += 2.0f;
-        Debug.Log("Points++");
+        cloakLevel += 5.0f;
+        if(whistleOptions < 3)
+        {
+            whistleOptions++;
+        }
+        //Debug.Log("Points++");
     }
 
     //When the user slashes irrelevant artefacts
@@ -109,8 +152,8 @@ public class OverallManager : MonoBehaviour
     {
         Instantiate(irrelevantDestroyFX, artefactPosition, Quaternion.identity);
         Instantiate(infoObject, artefactPosition, Quaternion.identity);
-        cloakLevel -= 1.0f;
-        Debug.Log("Points--");
+        cloakLevel -= 3.0f;
+        //Debug.Log("Points--");
     }
 
     //Function to spawn, also used for rearrange the artefacts
@@ -193,17 +236,7 @@ public class OverallManager : MonoBehaviour
             }
         }
         isFirstSpawn = false;
-        Debug.Log("Done Spawning");
-
-        if (isCloakLosing)
-        {
-            cloakLevel -= Time.deltaTime;
-            if (cloakLevel <= 0.0f)
-            {
-                Debug.Log("Cloak ran out. You failed to escape the level");
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-        }
+        Debug.Log("Done Spawning");        
     }
 
     //To check if a point is in a circle
@@ -250,6 +283,28 @@ public class OverallManager : MonoBehaviour
             }
         }
 
+    }
+
+    public bool checkWin()
+    {
+        bool isWin = true;
+        GameObject[] currObjects = new GameObject[8];
+        int currObjectCount;
+
+        currObjects = GameObject.FindGameObjectsWithTag("Artefact");
+
+        currObjectCount = currObjects.Count();
+
+        for (int i = 0; i < currObjectCount; i++)
+        {
+            if(currObjects[i].layer == 8)
+            {
+                isWin = false;
+                break;
+            }
+        }
+
+        return isWin;
     }
     
 }

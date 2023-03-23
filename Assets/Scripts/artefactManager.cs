@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class artefactManager : MonoBehaviour
 {
-    public bool isRelevant = true;
+    //public bool isRelevant = true;
     public OverallManager om;
+
+    
+
     //public GameObject manager;
 
     // Start is called before the first frame update
@@ -24,14 +27,14 @@ public class artefactManager : MonoBehaviour
     {
         if(other.tag == "Sword")
         {
-            if(isRelevant)
+            if(gameObject.layer == 8)
             {
-                om.SlashedRelevant(transform.position);
+                om.SlashedRelevant(transform.position + (transform.up * 2.0f));
             }
 
             else
             {
-                om.SlashedIrrelevant(transform.position);
+                om.SlashedIrrelevant(transform.position + (transform.up * 2.0f));
             }
 
             Destroy(gameObject);
