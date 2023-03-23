@@ -21,7 +21,9 @@ public class SliderScripts : MonoBehaviour
 
     public void Update()
     {
-        fill.fillAmount = fillValue;
+        fillValue = ovrMan.cloakLevel / 30.0f;
+        FillSlider();
+        //fill.fillAmount = fillValue;
     }
     public void FillSlider()
     {

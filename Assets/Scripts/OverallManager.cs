@@ -21,8 +21,11 @@ public class OverallManager : MonoBehaviour
     public bool isCloakLosing = false;
 
     Vector3 spawnLocation = Vector3.one;
-    Vector3[] occupiedLocations = new Vector3[15];//{ new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f) };
-  
+    Vector3[] occupiedLocations = new Vector3[15];
+
+    public Material green;
+    public Material red;
+
     public GameObject[] artefacts;
     public GameObject infoObject;
     public GameObject spawnedObjects;
@@ -30,8 +33,11 @@ public class OverallManager : MonoBehaviour
     public GameObject blindfold;
     public GameObject relevantDestroyFX;
     public GameObject irrelevantDestroyFX;
+    public GameObject winBoard;
+    public GameObject failBoard;
 
-    public bool[] isDestroyed = new bool[] { false, false, false, false };
+    bool gameWon = false;
+    bool gameLost = false;
     bool isFirstSpawn = true;
     bool isSpawned = false;
     float timer = 5.0f;
@@ -67,10 +73,13 @@ public class OverallManager : MonoBehaviour
 
         targetDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
 
-        if(checkWin())
+        if(checkWin() && !gameLost)
         {
             Debug.Log("You won the level");
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            isCloakLosing = false;
+            gameWon = true;
+            winBoard.SetActive(true);
+            //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         if(whistleOptions < 0)
@@ -93,9 +102,10 @@ public class OverallManager : MonoBehaviour
             }
         }
 
-        if(primaryButtonValue && !isSpawned && whistleOptions > 0)
+        if((primaryButtonValue && !isSpawned && whistleOptions > 0))
         {
             whistleOptions--;
+            Debug.Log("Whistle options left:" + whistleOptions);
             blindfold.SetActive(true);
             isBlindfolded = true;
             Spawn();
@@ -119,6 +129,14 @@ public class OverallManager : MonoBehaviour
 
         if (secondaryButtonValue)
         {
+            if(gameWon || gameLost)
+            {
+                winBoard.SetActive(false);
+                failBoard.SetActive(false);
+                gameWon = false;
+                gameLost = false;
+                isCloakLosing = true;
+            }
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
@@ -126,10 +144,21 @@ public class OverallManager : MonoBehaviour
         {
             cloakLevel -= Time.deltaTime;
 
-            if (cloakLevel <= 0.0f)
+            if (cloakLevel <= 0.0f && !gameWon)
             {
                 Debug.Log("Cloak ran out. You failed to escape the level");
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                failBoard.SetActive(true);
+                gameLost = true;
+                isCloakLosing = false;
+                //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+        }
+
+        else
+        {
+            if(!gameWon && !gameLost)
+            {
+                isCloakLosing = true;
             }
         }
     }
@@ -137,8 +166,10 @@ public class OverallManager : MonoBehaviour
     //When the user slashes relevant artefacts
     public void SlashedRelevant(Vector3 artefactPosition)
     {
+        GameObject infoObjectTemp;
         Instantiate(relevantDestroyFX, artefactPosition, Quaternion.identity);
-        Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        infoObjectTemp = Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        infoObjectTemp.GetComponent<MeshRenderer>().material = green;
         cloakLevel += 5.0f;
         if(whistleOptions < 3)
         {
@@ -150,8 +181,10 @@ public class OverallManager : MonoBehaviour
     //When the user slashes irrelevant artefacts
     public void SlashedIrrelevant(Vector3 artefactPosition)
     {
+        GameObject infoObjectTemp;
         Instantiate(irrelevantDestroyFX, artefactPosition, Quaternion.identity);
-        Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        infoObjectTemp = Instantiate(infoObject, artefactPosition, Quaternion.identity);
+        infoObjectTemp.GetComponent<MeshRenderer>().material = red;
         cloakLevel -= 3.0f;
         //Debug.Log("Points--");
     }
@@ -181,7 +214,7 @@ public class OverallManager : MonoBehaviour
 
             whileEscape = 0;
 
-            while (isColliding)
+            while (isColliding) //This while loop makes sure that the randomized position is not colliding with other objects
             {
                 whileEscape++;
 
@@ -219,13 +252,10 @@ public class OverallManager : MonoBehaviour
                 int artefactTypeCount = artefacts.Count();
                 int randomArtefactIndex = Random.Range(0, artefactTypeCount);
 
-                //Debug.Log("Inside the for loop" +i);
-
                 spawnedObjects = Instantiate(artefacts[randomArtefactIndex], spawnLocation, Quaternion.identity);
                 spawnedObjects.tag = "Artefact";
                 spawnedObjects.GetComponent<artefactManager>().om = gameObject.GetComponent<OverallManager>();
 
-                //tempStore[tempStoreCount] = spawnedObject.transform.position;
                 occupiedLocations[occupiedCount] = spawnLocation;
                 occupiedCount++;
             }
@@ -239,7 +269,7 @@ public class OverallManager : MonoBehaviour
         Debug.Log("Done Spawning");        
     }
 
-    //To check if a point is in a circle
+    //To check if a point is in a region
     public bool InsideRegion(Vector3 point, Vector3 regionCenter, float distanceLimit) 
     {
         Vector3 pointTested;
