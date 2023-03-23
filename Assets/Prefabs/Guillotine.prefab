@@ -70,7 +70,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: a4e721a195d1a014fad13add454776cc,
         type: 3}
       propertyPath: m_Name
-      value: torture_device_003
+      value: Guillotine
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a4e721a195d1a014fad13add454776cc,
         type: 3}
@@ -112,7 +112,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3404752630704432653, guid: a4e721a195d1a014fad13add454776cc, type: 3}
 --- !u!114 &-5866226568736932512
@@ -128,4 +128,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRelevant: 1
-  gm: {fileID: 0}
+  om: {fileID: 0}

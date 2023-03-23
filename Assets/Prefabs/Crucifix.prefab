@@ -70,7 +70,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: b9490fb608401fb47b87f25c7e3eddff,
         type: 3}
       propertyPath: m_Name
-      value: torture_device_008
+      value: Crucifix
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b9490fb608401fb47b87f25c7e3eddff,
         type: 3}
@@ -112,7 +112,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 7264938740827530369, guid: b9490fb608401fb47b87f25c7e3eddff, type: 3}
 --- !u!114 &5249604412605900109
@@ -128,4 +128,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRelevant: 1
-  gm: {fileID: 0}
+  om: {fileID: 0}
