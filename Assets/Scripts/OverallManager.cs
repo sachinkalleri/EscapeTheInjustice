@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class OverallManager : MonoBehaviour
 {
+    AudioSource audioCue;
+
     public int spawnSize = 4;
     public int numberOfArtefacts = 4;
     public int occupiedCount = 0;
@@ -15,19 +18,34 @@ public class OverallManager : MonoBehaviour
     //public Transform[] occupiedLocations;
 
 
-    public GameObject cube;
+    //public GameObject cube;
     //public GameObject[] spawnLocations; To delete
     public GameObject[] artefacts;
     public GameObject infoObject;
-    public GameObject spawnedObject;
+    public GameObject spawnedObjects;
     public GameObject sword;
 
     public bool[] isDestroyed = new bool[] { false, false, false, false };
+    bool isFirstSpawn = true;
+    bool isSpawned = false;
+    float timer = 5.0f;
     public int[] availableArtefacts = new int[] { -1, -1, -1, -1 };
+
+    private InputDevice targetDevice;
+
 
     // Start is called before the first frame update
     void Start()
     {
+        List<InputDevice> devices = new List<InputDevice>();
+        InputDeviceCharacteristics rightControllerCharacteristics = InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller;
+        InputDevices.GetDevicesWithCharacteristics(rightControllerCharacteristics, devices);
+
+        if(devices.Count > 0)
+        {
+            targetDevice = devices[0];
+        }
+
         occupiedLocations[0] = sword.transform.position;
         occupiedCount++;
         Debug.Log("Going to Spawn");
@@ -39,6 +57,24 @@ public class OverallManager : MonoBehaviour
     void Update()
     {
         occupiedLocations[0] = sword.transform.position;
+
+        targetDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
+
+        if(isSpawned)
+        {
+            timer -= Time.deltaTime;
+            if(timer < 0)
+            {
+                isSpawned = false;
+                timer = 5.0f;
+            }
+        }
+
+        if(primaryButtonValue && !isSpawned)
+        {
+            Spawn();
+            isSpawned = true;
+        }
     }
 
     public void SlashedRelevant(Vector3 artefactPosition)
@@ -55,15 +91,25 @@ public class OverallManager : MonoBehaviour
 
     public void Spawn()
     {
-        bool isColliding = true;
+        bool isColliding = true;        
         uint whileEscape;
+        int liveArtefactCount;
 
+        GameObject[] currObjects = new GameObject[8];
+
+        if(!isFirstSpawn)
+        {
+            currObjects = GameObject.FindGameObjectsWithTag("Artefact");
+            liveArtefactCount = currObjects.Count();
+            spawnSize = liveArtefactCount;
+            occupiedCount = liveArtefactCount + 1;
+        }
 
         for (int i = 0; i < spawnSize; i++)
         {
             spawnLocation.x = Random.Range(0, xLimit);
             spawnLocation.z = Random.Range(0, zLimit);
-            spawnLocation.y = 10.0f;
+            spawnLocation.y = 0.0f;
 
             whileEscape = 0;
 
@@ -73,7 +119,7 @@ public class OverallManager : MonoBehaviour
 
                 for (int j = 0; j < occupiedCount; j++)
                 {
-                    if (insideRegion(spawnLocation, occupiedLocations[j], 10.0f))
+                    if (InsideRegion(spawnLocation, occupiedLocations[j], 10.0f))
                     {
                         isColliding = true;
                         break;
@@ -100,22 +146,42 @@ public class OverallManager : MonoBehaviour
                 }
             }
 
-            int artefactTypeCount = artefacts.Count();
-            int randomArtefactIndex = Random.Range(0, artefactTypeCount);
+            if(isFirstSpawn)
+            {
+                int artefactTypeCount = artefacts.Count();
+                int randomArtefactIndex = Random.Range(0, artefactTypeCount);
 
-            //Debug.Log("Inside the for loop" +i);
+                //Debug.Log("Inside the for loop" +i);
 
-            spawnedObject = Instantiate(artefacts[randomArtefactIndex], spawnLocation, Quaternion.identity);
-            spawnedObject.GetComponent<artefactManager>().om = gameObject.GetComponent<OverallManager>();
+                spawnedObjects = Instantiate(artefacts[randomArtefactIndex], spawnLocation, Quaternion.identity);
+                spawnedObjects.tag = "Artefact";
+                spawnedObjects.GetComponent<artefactManager>().om = gameObject.GetComponent<OverallManager>();
 
-            //tempStore[tempStoreCount] = spawnedObject.transform.position;
-            occupiedLocations[occupiedCount] = spawnLocation;
-            occupiedCount++;
+                //tempStore[tempStoreCount] = spawnedObject.transform.position;
+                occupiedLocations[occupiedCount] = spawnLocation;
+                occupiedCount++;
+            }
+
+            else
+            {
+                currObjects[i].transform.position = spawnLocation;
+                if(currObjects[i].layer == 8)
+                {
+                    audioCue = currObjects[i].GetComponent<AudioSource>();
+                    audioCue.Play();
+                }                
+            }
+
+            //else
+            //{
+            //    occupiedLocations[i+1].transform
+            //}
         }
+        isFirstSpawn = false;
         Debug.Log("Done Spawning");
     }
 
-    public bool insideRegion(Vector3 point, Vector3 regionCenter, float distanceLimit) //To check if a point is in a circle
+    public bool InsideRegion(Vector3 point, Vector3 regionCenter, float distanceLimit) //To check if a point is in a circle
     {
         Vector3 pointTested;
         Vector3 centre;
@@ -138,4 +204,6 @@ public class OverallManager : MonoBehaviour
             return false;
         }
     }
+
+    
 }
